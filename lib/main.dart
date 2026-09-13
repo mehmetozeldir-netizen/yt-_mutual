@@ -324,6 +324,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String ilkHarf = widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'A';
+    String kullaniciAdi = widget.userEmail.contains('@') 
+        ? widget.userEmail.split('@')[0] 
+        : widget.userEmail;
+    if (kullaniciAdi.isNotEmpty) {
+      kullaniciAdi = kullaniciAdi[0].toUpperCase() + kullaniciAdi.substring(1);
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.white,
@@ -333,7 +341,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.black87),
           onPressed: () {
-            // Sol üstteki üç çizgiye basıldığında yan menüyü açar
             _scaffoldKey.currentState?.openDrawer();
           },
         ),
@@ -357,267 +364,336 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      // Sol üstteki üç çizgiye basıldığında açılacak yan menü (Drawer)
+      // Sol Yan Menü (Drawer)
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        backgroundColor: Colors.white,
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFFDC2626),
-              ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 35, color: Color(0xFFDC2626)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.manage_accounts_outlined, color: Colors.black87, size: 22),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.nightlight_outlined, color: Colors.black87, size: 22),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.logout, color: Colors.black87, size: 22),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _cikisYap();
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10),
+                  Container(
+                    width: 65,
+                    height: 65,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        ilkHarf,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
-                    widget.userEmail,
+                    kullaniciAdi,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
+                      color: Colors.black87,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
-                    'Puan: $_puan',
+                    widget.userEmail,
                     style: const TextStyle(
-                      color: Colors.white70,
+                      color: Colors.grey,
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Color(0xFFDC2626)),
-              title: const Text('Ana Sayfa'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.campaign, color: Color(0xFFDC2626)),
-              title: const Text('Kampanyalarım'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Kampanyalar ekranı yakında eklenecek.')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.star, color: Color(0xFFDC2626)),
-              title: const Text('Puan Kazan / Satın Al'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Puan marketi yakında eklenecek.')),
-                );
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.grey),
-              title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                _cikisYap();
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.grey[100],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text('Otomatik', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                    const SizedBox(width: 8),
-                    Switch(
-                      value: _otomatikMod,
-                      activeColor: Colors.red,
-                      onChanged: (val) {
-                        setState(() {
-                          _otomatikMod = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const Icon(Icons.error_outline, color: Colors.black54),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
+            const Divider(height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
                 children: [
-                  GestureDetector(
-                    onTap: _videoAc,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          height: 240,
-                          width: double.infinity,
+                  _buildDrawerItem(Icons.favorite_border, 'Puan Satın Al', () {}),
+                  _buildDrawerItem(Icons.verified_outlined, 'VIP Üye Ol', () {}),
+                  _buildDrawerItem(Icons.card_giftcard, 'Salla & Kazan', () {}),
+                  _buildDrawerItem(Icons.help_outline, 'Sıkça Sorulan Sorular', () {}),
+                  _buildDrawerItem(Icons.privacy_tip_outlined, 'Gizlilik Politikası', () {}),
+                  _buildDrawerItem(Icons.share_outlined, 'Uygulamayı Paylaş', () {}),
+                  _buildDrawerItem(Icons.star_border_rounded, 'Uygulamayı Değerlendir', () {}),
+                  _buildDrawerItem(Icons.chat_bubble_outline, 'Bize Ulaşın', () {}),
+                  _buildDrawerItem(Icons.logout, 'Çıkış yap', () {
+                    Navigator.pop(context);
+                    _cikisYap();
+                  }, isRed: true),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Sürüm: 3.4.21',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  Row(
+                    children: const [
+                      Text(
+                        'harby',
+                        style: TextStyle(
                           color: Colors.black,
-                          child: const Center(
-                            child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
-                          ),
-                        ),
-                        Positioned(
-                          top: 10,
-                          left: 10,
-                          child: Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Colors.grey,
-                                child: Icon(Icons.person, color: Colors.white, size: 18),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'How to Make Money on Amazon',
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                  ),
-                                  Text(
-                                    'Gift makumbi biye',
-                                    style: TextStyle(color: Colors.white70, fontSize: 10),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 12,
-                          right: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: const [
-                                Text('izlemek için: ', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                                Icon(Icons.play_arrow, color: Colors.red, size: 16),
-                                Text('YouTube', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.favorite, color: Colors.black, size: 24),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.timer_outlined, color: Colors.black, size: 24),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text('61', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        onPressed: _gorevTamamla,
-                        child: const Text(
-                          'Değiştir',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
-                    ),
+                      Text(
+                        'apps',
+                        style: TextStyle(
+                          color: Color(0xFFDC2626),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.format_list_bulleted, 'Kampanya', 0),
-                _buildNavItem(Icons.play_arrow_rounded, 'İzle', 1),
-                _buildNavItem(Icons.subscriptions, 'Abone Ol', 2),
-                _buildNavItem(Icons.thumb_up, 'Beğen', 3),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
+      body: SafeArea(
+        bottom: false, // Alt kenarın safe area boşluğunu optimize etmek için
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.grey[100],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Otomatik', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                      const SizedBox(width: 8),
+                      Switch(
+                        value: _otomatikMod,
+                        activeColor: Colors.red,
+                        onChanged: (val) {
+                          setState(() {
+                            _otomatikMod = val;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const Icon(Icons.error_outline, color: Colors.black54),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: _videoAc,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            height: 240,
+                            width: double.infinity,
+                            color: Colors.black,
+                            child: const Center(
+                              child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
+                            ),
+                          ),
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: Row(
+                              children: [
+                                const CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Colors.grey,
+                                  child: Icon(Icons.person, color: Colors.white, size: 18),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'How to Make Money on Amazon',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                    ),
+                                    Text(
+                                      'Gift makumbi biye',
+                                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: const [
+                                  Text('izlemek için: ', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                                  Icon(Icons.play_arrow, color: Colors.red, size: 16),
+                                  Text('YouTube', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.favorite, color: Colors.black, size: 24),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.timer_outlined, color: Colors.black, size: 24),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text('61', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          onPressed: _gorevTamamla,
+                          child: const Text(
+                            'Değiştir',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15), // İçeriğin alt menüyle çakışmaması için ufak bir boşluk
+                  ],
+                ),
+              ),
+            ),
+            // Alt Menü Çubuğu (Yukarı taşındı ve alt boşluk dengelendi)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(Icons.format_list_bulleted, 'Kampanya', 0),
+                  _buildNavItem(Icons.play_arrow_rounded, 'İzle', 1),
+                  _buildNavItem(Icons.subscriptions, 'Abone Ol', 2),
+                  _buildNavItem(Icons.thumb_up, 'Beğen', 3),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap, {bool isRed = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isRed ? Colors.red : Colors.black87, size: 22),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isRed ? Colors.red : Colors.black87,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
+      dense: true,
+      horizontalTitleGap: 8,
     );
   }
 
@@ -632,8 +708,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? Colors.red : Colors.grey),
-          const SizedBox(height: 4),
+          Icon(icon, color: isSelected ? Colors.red : Colors.grey, size: 24),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
