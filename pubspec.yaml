@@ -1,6 +1,7 @@
 name: yt_mutual
-description: YouTube Karşılıklı İzlenme ve Abone Uygulaması
-publish_to: 'none'
+description: "YT Mutual - Kanalınız için daha fazla abone, beğeni ve izlenme kazanın."
+publish_to: 'none' 
+
 version: 1.0.0+1
 
 environment:
@@ -9,10 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.27.0
-  firebase_auth: ^4.17.8
-  cloud_firestore: ^4.15.8
-  google_sign_in: ^6.2.1
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
