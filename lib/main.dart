@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const YtMutualApp());
@@ -229,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// 3. EKRAN GÖRÜNTÜSÜNDEKİ BİREBİR PANELLER
+// 3. ANA PANEL EKRANI
 class DashboardScreen extends StatefulWidget {
   final String userEmail;
   const DashboardScreen({Key? key, required this.userEmail}) : super(key: key);
@@ -239,9 +240,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _puan = 178; // Ekran görüntüsündeki başlangıç puanı
+  int _puan = 178;
   bool _otomatikMod = false;
-  int _seciliTab = 1; // 0: Kampanya, 1: İzle, 2: Abone Ol, 3: Beğen
+  int _seciliTab = 1;
+
+  final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
   @override
   void initState() {
@@ -264,8 +267,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  Future<void> _videoAc() async {
+    final Uri url = Uri.parse(_youtubeVideoUrl);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Video açılamadı: $url');
+    }
+  }
+
   void _gorevTamamla() {
-    int yeniBakiye = _puan + 48; // Ekran görüntüsündeki video başına ödül
+    int yeniBakiye = _puan + 48;
     _puanKaydet(yeniBakiye);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')),
@@ -305,7 +315,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: Column(
         children: [
-          // Üst Otomatik Barı
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             color: Colors.grey[100],
@@ -331,61 +340,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          
-          // Video İzleme Kartı Alanı
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        height: 240,
-                        width: double.infinity,
-                        color: Colors.black,
-                        child: const Center(
-                          child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
+                  GestureDetector(
+                    onTap: _videoAc,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 240,
+                          width: double.infinity,
+                          color: Colors.black,
+                          child: const Center(
+                            child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 16,
-                              backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, color: Colors.white, size: 18),
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 16,
+                                backgroundColor: Colors.grey,
+                                child: Icon(Icons.person, color: Colors.white, size: 18),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'How to Make Money on Amazon',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                  Text(
+                                    'Gift makumbi biye',
+                                    style: TextStyle(color: Colors.white70, fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          right: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: const [
-                                Text(
-                                  'How to Make Money on Amazon',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
-                                Text(
-                                  'Gift makumbi biye',
-                                  style: TextStyle(color: Colors.white70, fontSize: 10),
-                                ),
+                                Text('izlemek için: ', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                                Icon(Icons.play_arrow, color: Colors.red, size: 16),
+                                Text('YouTube', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
-                  
-                  // Puan ve Süre Sayaç Kartları
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        // Puan Kutusu
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                           decoration: BoxDecoration(
@@ -406,7 +431,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ),
                         ),
-                        // Süre Kutusu
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                           decoration: BoxDecoration(
@@ -431,8 +455,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 25),
-                  
-                  // Siyah Değiştir Butonu
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: SizedBox(
@@ -457,8 +479,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-          
-          // Alt Navigasyon Çubuğu (Tab Bar)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
