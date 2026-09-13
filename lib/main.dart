@@ -265,9 +265,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _puan = 178;
+  int _puan = 0;
   bool _otomatikMod = false;
-  int _seciliTab = 1; // Varsayılan olarak "İzle" sekmesi seçili
+  int _seciliTab = 1;
 
   final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -280,8 +280,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _puaniYukle() async {
     final prefs = await SharedPreferences.getInstance();
+    int kayitliPuan = prefs.getInt('kullanici_puani_${widget.userEmail}') ?? 178;
     setState(() {
-      _puan = prefs.getInt('kullanici_puani_${widget.userEmail}') ?? 178;
+      _puan = kayitliPuan;
     });
   }
 
@@ -364,7 +365,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      // Sol Yan Menü (Drawer - Eksiksiz tam liste)
+      // Sol Yan Menü (Drawer)
       drawer: Drawer(
         backgroundColor: Colors.white,
         child: Column(
@@ -493,7 +494,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       body: SafeArea(
-        bottom: false,
         child: Column(
           children: [
             Container(
@@ -604,9 +604,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 const SizedBox(width: 10),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                    Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                  children: [
+                                    Text('$_puan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    const Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
                                   ],
                                 ),
                               ],
@@ -656,17 +656,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
-            // Alt Menü Çubuğu
+            // Alt Menü Çubuğu (Bir tık daha yukarı taşındı)
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
