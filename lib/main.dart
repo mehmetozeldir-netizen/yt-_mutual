@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Puanları kalıcı saklamak için
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const YtMutualApp());
@@ -46,63 +46,43 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 90,
-                  height: 65,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 0,
-                      height: 0,
-                      margin: const EdgeInsets.only(left: 4),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(width: 12, color: Colors.transparent),
-                          bottom: BorderSide(width: 12, color: Colors.transparent),
-                          left: BorderSide(width: 20, color: Color(0xFFDC2626)),
-                        ),
-                      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 65,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Container(
+                  width: 0,
+                  height: 0,
+                  margin: const EdgeInsets.only(left: 4),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(width: 12, color: Colors.transparent),
+                      bottom: BorderSide(width: 12, color: Colors.transparent),
+                      left: BorderSide(width: 20, color: Color(0xFFDC2626)),
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
-                const Text(
-                  'Yt Mutual',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'harbyapps',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2.0,
-                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 15),
+            const Text(
+              'Yt Mutual',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -120,40 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   Future<void> _handleGoogleSignIn() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: const Color(0xFFDC2626),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                CircularProgressIndicator(color: Colors.white),
-                SizedBox(height: 20),
-                Text(
-                  'Güvenli Bağlantı Kuruluyor...',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Yt Mutual',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
     try {
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
-      if (mounted) Navigator.pop(context);
-
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -165,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (error) {
-      if (mounted) Navigator.pop(context);
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -272,11 +219,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Color(0xFF6B7280), fontSize: 11, height: 1.5),
                   ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    'harbyapps',
-                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5),
-                  ),
                 ],
               ),
             ),
@@ -287,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// 3. ANA EKRAN VE %100 GÜVENLİ PUAN SİSTEMİ
+// 3. EKRAN GÖRÜNTÜSÜNDEKİ BİREBİR PANELLER
 class DashboardScreen extends StatefulWidget {
   final String userEmail;
   const DashboardScreen({Key? key, required this.userEmail}) : super(key: key);
@@ -297,23 +239,23 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _puan = 150; // Başlangıç bakiyesi
+  int _puan = 178; // Ekran görüntüsündeki başlangıç puanı
+  bool _otomatikMod = false;
+  int _seciliTab = 1; // 0: Kampanya, 1: İzle, 2: Abone Ol, 3: Beğen
 
   @override
   void initState() {
     super.initState();
-    _puaniYukle(); // Uygulama açılır açılmaz kaydedilmiş puanı hafızadan geri yükle
+    _puaniYukle();
   }
 
-  // Puanı telefondaki güvenli hafızadan oku
   Future<void> _puaniYukle() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _puan = prefs.getInt('kullanici_puani_${widget.userEmail}') ?? 150;
+      _puan = prefs.getInt('kullanici_puani_${widget.userEmail}') ?? 178;
     });
   }
 
-  // Puanı telefondaki güvenli hafızaya kalıcı olarak kaydet
   Future<void> _puanKaydet(int yeniPuan) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('kullanici_puani_${widget.userEmail}', yeniPuan);
@@ -322,111 +264,244 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // Puan Ekleme Örneği (Görev tamamlandığında)
-  void _puanKazan(int eklenecekMiktar) {
-    int guncelPuan = _puan + eklenecekMiktar;
-    _puanKaydet(guncelPuan);
+  void _gorevTamamla() {
+    int yeniBakiye = _puan + 48; // Ekran görüntüsündeki video başına ödül
+    _puanKaydet(yeniBakiye);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Tebrikler! +$eklenecekMiktar Puan eklendi. Toplam: $guncelPuan Puan')),
+      const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFDC2626),
-        title: const Text('Yt Mutual - Panel', style: TextStyle(color: Colors.white)),
-        centerTitle: true,
+        backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.black87),
+          onPressed: () {},
+        ),
+        title: const Text(
+          'Yt Mutual',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Row(
+              children: [
+                Text(
+                  '$_puan',
+                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.favorite, color: Colors.red, size: 20),
+              ],
+            ),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
+      body: Column(
+        children: [
+          // Üst Otomatik Barı
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.grey[100],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Text('Otomatik', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: _otomatikMod,
+                      activeColor: Colors.red,
+                      onChanged: (val) {
+                        setState(() {
+                          _otomatikMod = val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const Icon(Icons.error_outline, color: Colors.black54),
+              ],
+            ),
+          ),
+          
+          // Video İzleme Kartı Alanı
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  const CircleAvatar(
-                    backgroundColor: Color(0xFFDC2626),
-                    child: Icon(Icons.person, color: Colors.white),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        height: 240,
+                        width: double.infinity,
+                        color: Colors.black,
+                        child: const Center(
+                          child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
+                        ),
+                      ),
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person, color: Colors.white, size: 18),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'How to Make Money on Amazon',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                ),
+                                Text(
+                                  'Gift makumbi biye',
+                                  style: TextStyle(color: Colors.white70, fontSize: 10),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 20),
+                  
+                  // Puan ve Süre Sayaç Kartları
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        const Text('Giriş Yapılan Hesap,', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                        Text(widget.userEmail, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        // Puan Kutusu
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.favorite, color: Colors.black, size: 24),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text('48', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Süre Kutusu
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.timer_outlined, color: Colors.black, size: 24),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text('61', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  
+                  // Siyah Değiştir Butonu
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                        onPressed: _gorevTamamla,
+                        child: const Text(
+                          'Değiştir',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            // Kalıcı Bakiye Kartı
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFDC2626), Color(0xFF991B1B)]),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Kalıcı Güvenli Bakiye', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                      const SizedBox(height: 5),
-                      Text('$_puan Puan', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const Icon(Icons.verified, color: Colors.white, size: 40),
-                ],
-              ),
+          ),
+          
+          // Alt Navigasyon Çubuğu (Tab Bar)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey.shade200)),
             ),
-            const SizedBox(height: 25),
-            const Text('Görevler ve Kazan', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            Expanded(
-              child: ListView(
-                children: [
-                  ListTile(
-                    tileColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    leading: const Icon(Icons.video_library, color: Color(0xFFDC2626)),
-                    title: const Text('Videoyu İzle & Puanı Kap', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Anında +20 Puan (Kayıtlı)'),
-                    trailing: const Icon(Icons.add_circle, color: Color(0xFFDC2626), size: 28),
-                    onTap: () => _puanKazan(20),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    tileColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    leading: const Icon(Icons.campaign, color: Color(0xFFDC2626)),
-                    title: const Text('Kanalını Tanıt / Kampanya Oluştur', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Abone ve izlenme kas'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Kampanya yönetimi aktif.')),
-                      );
-                    },
-                  ),
-                ],
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.format_list_bulleted, 'Kampanya', 0),
+                _buildNavItem(Icons.play_arrow_rounded, 'İzle', 1),
+                _buildNavItem(Icons.subscriptions, 'Abone Ol', 2),
+                _buildNavItem(Icons.thumb_up, 'Beğen', 3),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    bool isSelected = _seciliTab == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _seciliTab = index;
+        });
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: isSelected ? Colors.red : Colors.grey),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.red : Colors.grey,
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
       ),
     );
   }
