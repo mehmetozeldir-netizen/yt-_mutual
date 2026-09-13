@@ -265,9 +265,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _puan = 0;
+  int _puan = 178;
   bool _otomatikMod = false;
-  int _seciliTab = 1; // Varsayılan: İzle sekmesi
+  int _seciliTab = 1;
 
   final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -278,17 +278,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _puaniYukle();
   }
 
+  // Puanı hem e-postaya özel hem de genel kalıcı anahtardan ortak okuyoruz
   Future<void> _puaniYukle() async {
     final prefs = await SharedPreferences.getInstance();
-    int kayitliPuan = prefs.getInt('kullanici_puani_${widget.userEmail}') ?? 178;
+    
+    int? emailPuani = prefs.getInt('kullanici_puani_${widget.userEmail}');
+    int? genelPuan = prefs.getInt('kalici_genel_puan_miktari');
+    
+    // Eğer daha önce kaydedilmiş bir puan varsa en güncelini alıyoruz, yoksa varsayılan 178 kullanıyoruz
+    int yuklenenPuan = emailPuani ?? genelPuan ?? 178;
+
     setState(() {
-      _puan = kayitliPuan;
+      _puan = yuklenenPuan;
     });
   }
 
+  // Puanı iki farklı anahtara birden kaydederek kaybolmasını engelliyoruz
   Future<void> _puanKaydet(int yeniPuan) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('kullanici_puani_${widget.userEmail}', yeniPuan);
+    await prefs.setInt('kalici_genel_puan_miktari', yeniPuan);
+    
     setState(() {
       _puan = yeniPuan;
     });
@@ -496,7 +506,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Üst Otomatik Mod Çubuğu (Sadece İzle sekmesinde gösterilebilir veya sabit kalabilir)
             if (_seciliTab == 1)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -524,15 +533,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-            // SEKME İÇERİKLERİ
             Expanded(
               child: _seciliTab == 0
-                  ? _buildKampanyaEkrani() // Kampanya Bulunamadı Ekranı
+                  ? _buildKampanyaEkrani()
                   : SingleChildScrollView(
                       child: Column(
                         children: [
                           if (_seciliTab == 1) ...[
-                            // İZLE EKRANI İÇERİĞİ
                             GestureDetector(
                               onTap: _videoAc,
                               child: Stack(
@@ -665,11 +672,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
                           ] else if (_seciliTab == 2) ...[
-                            // ABONE OL EKRANI
                             const SizedBox(height: 100),
                             const Center(child: Text('Abone Ol Görevleri Bulunamadı', style: TextStyle(color: Colors.grey, fontSize: 15))),
                           ] else if (_seciliTab == 3) ...[
-                            // BEĞEN EKRANI
                             const SizedBox(height: 100),
                             const Center(child: Text('Beğen Görevleri Bulunamadı', style: TextStyle(color: Colors.grey, fontSize: 15))),
                           ],
@@ -709,7 +714,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Gönderdiğin görseldeki Kampanya Bulunamadı ekran tasarımı
   Widget _buildKampanyaEkrani() {
     return Stack(
       children: [
@@ -719,7 +723,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Özel Kalpli Yuvarlak Kutu İkonu
                 Container(
                   width: 90,
                   height: 90,
@@ -754,7 +757,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ),
-        // Sağ Alttaki Kırmızı Artı Butonu
         Positioned(
           bottom: 20,
           right: 20,
