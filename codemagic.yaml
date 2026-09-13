@@ -1,0 +1,12 @@
+workflows:
+  default-workflow:
+    name: YT Mutual Workflow
+    environment:
+      flutter: stable
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Build App Bundle
+        script: flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
