@@ -330,7 +330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.black87),
-          onPressed: _cikisYap, // Menüye basınca çıkış yapar
+          onPressed: _cikisYap,
         ),
         title: const Text(
           'Yt Mutual',
@@ -518,7 +518,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-          // Resimdeki gibi alt kısımda Kampanya, İzle, Abone Ol ve Beğen butonları ve yazıları
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
