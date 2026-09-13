@@ -364,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      // Sol Yan Menü (Drawer)
+      // Sol Yan Menü (Drawer - Eksiksiz tam liste)
       drawer: Drawer(
         backgroundColor: Colors.white,
         child: Column(
@@ -441,8 +441,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildDrawerItem(Icons.favorite_border, 'Puan Satın Al', () {}),
                   _buildDrawerItem(Icons.verified_outlined, 'VIP Üye Ol', () {}),
                   _buildDrawerItem(Icons.card_giftcard, 'Salla & Kazan', () {}),
+                  _buildDrawerItem(Icons.people_outline, 'Arkadaşını Davet Et', () {}),
+                  _buildDrawerItem(Icons.confirmation_number_outlined, 'Promosyon Kodu', () {}),
+                  _buildDrawerItem(Icons.history, 'İşlem Geçmişi', () {}),
                   _buildDrawerItem(Icons.help_outline, 'Sıkça Sorulan Sorular', () {}),
                   _buildDrawerItem(Icons.privacy_tip_outlined, 'Gizlilik Politikası', () {}),
+                  _buildDrawerItem(Icons.description_outlined, 'Kullanım Koşulları', () {}),
                   _buildDrawerItem(Icons.share_outlined, 'Uygulamayı Paylaş', () {}),
                   _buildDrawerItem(Icons.star_border_rounded, 'Uygulamayı Değerlendir', () {}),
                   _buildDrawerItem(Icons.chat_bubble_outline, 'Bize Ulaşın', () {}),
@@ -489,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       body: SafeArea(
-        bottom: false, // Alt kenarın safe area boşluğunu optimize etmek için
+        bottom: false,
         child: Column(
           children: [
             Container(
@@ -652,12 +656,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 15), // İçeriğin alt menüyle çakışmaması için ufak bir boşluk
+                    const SizedBox(height: 15),
                   ],
                 ),
               ),
             ),
-            // Alt Menü Çubuğu (Yukarı taşındı ve alt boşluk dengelendi)
+            // Alt Menü Çubuğu
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
