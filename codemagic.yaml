@@ -4,6 +4,10 @@ workflows:
     environment:
       flutter: stable
     scripts:
+      - name: Clean old android folder
+        script: rm -rf android
+      - name: Generate Android Platform Files
+        script: flutter create . --platforms=android
       - name: Install dependencies
         script: flutter pub get
       - name: Build App Bundle
