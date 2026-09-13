@@ -270,6 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _seciliTab = 1; // Varsayılan olarak "İzle" sekmesi seçili
 
   final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -324,13 +325,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.black87),
-          onPressed: _cikisYap,
+          onPressed: () {
+            // Sol üstteki üç çizgiye basıldığında yan menüyü açar
+            _scaffoldKey.currentState?.openDrawer();
+          },
         ),
         title: const Text(
           'Yt Mutual',
@@ -351,6 +356,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ],
+      ),
+      // Sol üstteki üç çizgiye basıldığında açılacak yan menü (Drawer)
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFFDC2626),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 35, color: Color(0xFFDC2626)),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.userEmail,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Puan: $_puan',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.dashboard, color: Color(0xFFDC2626)),
+              title: const Text('Ana Sayfa'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.campaign, color: Color(0xFFDC2626)),
+              title: const Text('Kampanyalarım'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Kampanyalar ekranı yakında eklenecek.')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.star, color: Color(0xFFDC2626)),
+              title: const Text('Puan Kazan / Satın Al'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Puan marketi yakında eklenecek.')),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.grey),
+              title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _cikisYap();
+              },
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
