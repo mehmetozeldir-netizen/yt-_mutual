@@ -24,7 +24,7 @@ class YtMutualApp extends StatelessWidget {
   }
 }
 
-// 1. SPLASH EKRANI
+// 1. SPLASH EKRANI (Oturum kontrolü)
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -36,12 +36,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
+    _oturumuKontrolEt();
+  }
+
+  Future<void> _oturumuKontrolEt() async {
+    await Future.delayed(const Duration(seconds: 2));
+    
+    final prefs = await SharedPreferences.getInstance();
+    String? kaydedilenEmail = prefs.getString('aktif_kullanici_email');
+
+    if (!mounted) return;
+
+    if (kaydedilenEmail != null && kaydedilenEmail.isNotEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(userEmail: kaydedilenEmail),
+        ),
+      );
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
-    });
+    }
   }
 
   @override
@@ -103,22 +121,29 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGoogleSignIn() async {
     try {
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
+      String email = account?.email ?? "ytmutual@user.com";
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('aktif_kullanici_email', email);
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => DashboardScreen(
-              userEmail: account?.email ?? "ytmutual@user.com",
-            ),
+            builder: (context) => DashboardScreen(userEmail: email),
           ),
         );
       }
     } catch (error) {
+      String email = "ytmutual@user.com";
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('aktif_kullanici_email', email);
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const DashboardScreen(userEmail: "ytmutual@user.com"),
+            builder: (context) => DashboardScreen(userEmail: email),
           ),
         );
       }
@@ -242,7 +267,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _puan = 178;
   bool _otomatikMod = false;
-  int _seciliTab = 1;
+  int _seciliTab = 1; // Varsayılan olarak "İzle" sekmesi seçili
 
   final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
@@ -265,6 +290,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _puan = yeniPuan;
     });
+  }
+
+  Future<void> _cikisYap() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('aktif_kullanici_email');
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   Future<void> _videoAc() async {
@@ -291,7 +330,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.black87),
-          onPressed: () {},
+          onPressed: _cikisYap, // Menüye basınca çıkış yapar
         ),
         title: const Text(
           'Yt Mutual',
@@ -479,6 +518,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
+          // Resimdeki gibi alt kısımda Kampanya, İzle, Abone Ol ve Beğen butonları ve yazıları
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
