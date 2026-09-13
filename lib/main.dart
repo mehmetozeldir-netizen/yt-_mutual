@@ -267,7 +267,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _puan = 0;
   bool _otomatikMod = false;
-  int _seciliTab = 1;
+  int _seciliTab = 1; // Varsayılan: İzle sekmesi
 
   final String _youtubeVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -496,172 +496,190 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.grey[100],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Text('Otomatik', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                      const SizedBox(width: 8),
-                      Switch(
-                        value: _otomatikMod,
-                        activeColor: Colors.red,
-                        onChanged: (val) {
-                          setState(() {
-                            _otomatikMod = val;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const Icon(Icons.error_outline, color: Colors.black54),
-                ],
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
+            // Üst Otomatik Mod Çubuğu (Sadece İzle sekmesinde gösterilebilir veya sabit kalabilir)
+            if (_seciliTab == 1)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.grey[100],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GestureDetector(
-                      onTap: _videoAc,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            height: 240,
-                            width: double.infinity,
-                            color: Colors.black,
-                            child: const Center(
-                              child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
-                            ),
-                          ),
-                          Positioned(
-                            top: 10,
-                            left: 10,
-                            child: Row(
-                              children: [
-                                const CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, color: Colors.white, size: 18),
-                                ),
-                                const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      'How to Make Money on Amazon',
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                    ),
-                                    Text(
-                                      'Gift makumbi biye',
-                                      style: TextStyle(color: Colors.white70, fontSize: 10),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 12,
-                            right: 12,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: const [
-                                  Text('izlemek için: ', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                                  Icon(Icons.play_arrow, color: Colors.red, size: 16),
-                                  Text('YouTube', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.favorite, color: Colors.black, size: 24),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('$_puan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                    const Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.timer_outlined, color: Colors.black, size: 24),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text('61', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                    Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                          ),
-                          onPressed: _gorevTamamla,
-                          child: const Text(
-                            'Değiştir',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                    Row(
+                      children: [
+                        const Text('Otomatik', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: _otomatikMod,
+                          activeColor: Colors.red,
+                          onChanged: (val) {
+                            setState(() {
+                              _otomatikMod = val;
+                            });
+                          },
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
+                    const Icon(Icons.error_outline, color: Colors.black54),
                   ],
                 ),
               ),
+
+            // SEKME İÇERİKLERİ
+            Expanded(
+              child: _seciliTab == 0
+                  ? _buildKampanyaEkrani() // Kampanya Bulunamadı Ekranı
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          if (_seciliTab == 1) ...[
+                            // İZLE EKRANI İÇERİĞİ
+                            GestureDetector(
+                              onTap: _videoAc,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    height: 240,
+                                    width: double.infinity,
+                                    color: Colors.black,
+                                    child: const Center(
+                                      child: Icon(Icons.play_circle_fill, color: Colors.red, size: 70),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 10,
+                                    left: 10,
+                                    child: Row(
+                                      children: [
+                                        const CircleAvatar(
+                                          radius: 16,
+                                          backgroundColor: Colors.grey,
+                                          child: Icon(Icons.person, color: Colors.white, size: 18),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: const [
+                                            Text(
+                                              'How to Make Money on Amazon',
+                                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                            ),
+                                            Text(
+                                              'Gift makumbi biye',
+                                              style: TextStyle(color: Colors.white70, fontSize: 10),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 12,
+                                    right: 12,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.6),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        children: const [
+                                          Text('izlemek için: ', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                                          Icon(Icons.play_arrow, color: Colors.red, size: 16),
+                                          Text('YouTube', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.favorite, color: Colors.black, size: 24),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('$_puan', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                            const Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.timer_outlined, color: Colors.black, size: 24),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: const [
+                                            Text('61', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                            Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 25),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                  ),
+                                  onPressed: _gorevTamamla,
+                                  child: const Text(
+                                    'Değiştir',
+                                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else if (_seciliTab == 2) ...[
+                            // ABONE OL EKRANI
+                            const SizedBox(height: 100),
+                            const Center(child: Text('Abone Ol Görevleri Bulunamadı', style: TextStyle(color: Colors.grey, fontSize: 15))),
+                          ] else if (_seciliTab == 3) ...[
+                            // BEĞEN EKRANI
+                            const SizedBox(height: 100),
+                            const Center(child: Text('Beğen Görevleri Bulunamadı', style: TextStyle(color: Colors.grey, fontSize: 15))),
+                          ],
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
             ),
-            // Alt Menü Çubuğu (Bir tık daha yukarı taşındı)
+
+            // Alt Menü Çubuğu
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
@@ -688,6 +706,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // Gönderdiğin görseldeki Kampanya Bulunamadı ekran tasarımı
+  Widget _buildKampanyaEkrani() {
+    return Stack(
+      children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Özel Kalpli Yuvarlak Kutu İkonu
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC2626),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.favorite, color: Colors.white, size: 50),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Kampanya bulunamadı.',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Yeni kampanya oluşturmak için + butonuna dokunun.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Sağ Alttaki Kırmızı Artı Butonu
+        Positioned(
+          bottom: 20,
+          right: 20,
+          child: FloatingActionButton(
+            backgroundColor: const Color(0xFFDC2626),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Yeni kampanya ekleme ekranı açılacak.')),
+              );
+            },
+            child: const Icon(Icons.add, color: Colors.white, size: 28),
+          ),
+        ),
+      ],
     );
   }
 
