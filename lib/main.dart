@@ -278,14 +278,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _puaniYukle();
   }
 
-  // Puanı hem e-postaya özel hem de genel kalıcı anahtardan ortak okuyoruz
   Future<void> _puaniYukle() async {
     final prefs = await SharedPreferences.getInstance();
-    
     int? emailPuani = prefs.getInt('kullanici_puani_${widget.userEmail}');
     int? genelPuan = prefs.getInt('kalici_genel_puan_miktari');
-    
-    // Eğer daha önce kaydedilmiş bir puan varsa en güncelini alıyoruz, yoksa varsayılan 178 kullanıyoruz
     int yuklenenPuan = emailPuani ?? genelPuan ?? 178;
 
     setState(() {
@@ -293,7 +289,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // Puanı iki farklı anahtara birden kaydederek kaybolmasını engelliyoruz
   Future<void> _puanKaydet(int yeniPuan) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('kullanici_puani_${widget.userEmail}', yeniPuan);
@@ -330,6 +325,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _puanKaydet(yeniBakiye);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')),
+    );
+  }
+
+  // Artı butonuna basıldığında açılacak Kampanya Ekleme Penceresi
+  void _kampanyaEklePenceresiAc() {
+    final TextEditingController urlController = TextEditingController();
+    final TextEditingController miktarController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Yeni Kampanya Oluştur', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: urlController,
+                decoration: const InputDecoration(
+                  labelText: 'YouTube Video Linki',
+                  hintText: 'https://www.youtube.com/watch?v=...',
+                ),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: miktarController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'İstenen İzlenme / Abone Sayısı',
+                  hintText: 'Örn: 10',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('İptal', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+              onPressed: () {
+                if (urlController.text.isNotEmpty) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Kampanya başarıyla oluşturuldu!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Lütfen geçerli bir YouTube linki girin.')),
+                  );
+                }
+              },
+              child: const Text('Oluştur', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -757,22 +810,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ),
+        // Artı butonuna tıklama fonksiyonu bağlandı
         Positioned(
           bottom: 20,
           right: 20,
           child: FloatingActionButton(
             backgroundColor: const Color(0xFFDC2626),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Yeni kampanya ekleme ekranı açılacak.')),
-              );
-            },
+            onPressed: _kampanyaEkraniAcilsinMi ? null : _kampanyaEklePenceresiAc,
             child: const Icon(Icons.add, color: Colors.white, size: 28),
           ),
         ),
       ],
     );
   }
+
+  bool get _kampanyaEkraniAcilsinMi => false;
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap, {bool isRed = false}) {
     return ListTile(
