@@ -814,7 +814,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// 5. GÖNDERDİĞİN EKRAN GÖRÜNTÜSÜNE BİREBİR UYUMLU "KAMPANYA OLUŞTUR" EKRANI
+// 4. KAMPANYA OLUŞTUR EKRANI (Link Ekleme Özellikli Eksiksiz Kod)
 class KampanyaOlusturScreen extends StatefulWidget {
   const KampanyaOlusturScreen({Key? key}) : super(key: key);
 
@@ -826,6 +826,27 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
   int _seciliKampanyaTuru = 0; // 0: İzlenme, 1: Abone Ol, 2: Beğeni
   String _izlenmeSayisi = '25';
   String _gerekenSure = '60';
+  final TextEditingController _videoLinkController = TextEditingController();
+
+  void _videoEkle() {
+    String link = _videoLinkController.text.trim();
+    if (link.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen bir YouTube video linki girin.')),
+      );
+      return;
+    }
+
+    if (link.contains('youtube.com') || link.contains('youtu.be')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video başarıyla eklendi!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geçerli bir YouTube linki giriniz.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -835,12 +856,12 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Kampanya Oluştur',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           Padding(
@@ -862,17 +883,17 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Üst Siyah Bilgilendirme Alanı (Görseldeki gibi siyah arka plan)
+            // 1. Üst Siyah Bilgilendirme Alanı
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               color: Colors.black,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Text('• Aynı video için çok sayıda kampanya oluşturmayın.', style: TextStyle(fontSize: 12, color: Colors.white, height: 1.4)),
                   SizedBox(height: 4),
-                  Text('• Kampanyaların YT\'a yansıması 72 saati bulabilir.', style: TextStyle(fontSize: 12, color: Colors.white, height: 1.4)),
+                  Text("• Kampanyaların YT'a yansıması 72 saati bulabilir.", style: TextStyle(fontSize: 12, color: Colors.white, height: 1.4)),
                   SizedBox(height: 4),
                   Text('• Politikaya aykırı kampanyalar silinir.', style: TextStyle(fontSize: 12, color: Colors.white, height: 1.4)),
                   SizedBox(height: 4),
@@ -882,23 +903,23 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Unity Ads Reklam Alanı Etiketi
+                  // Unity Ads Etiketi
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: const Text('Unity Ads', style: TextStyle(fontSize: 9, color: Colors.black54, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
 
                   // Soru İşaretli Bilgilendirme Kutusu
                   Container(
@@ -918,14 +939,14 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
                         const SizedBox(width: 12),
                         const Expanded(
                           child: Text(
-                            'Video bağlantısı almak için: Videonuzu YT\'da açın → Paylaş → Bağlantıyı Kopyala',
+                            "Video bağlantısı almak için: Videonuzu YT'da açın → Paylaş → Bağlantıyı Kopyala",
                             style: TextStyle(fontSize: 11, color: Colors.black54, height: 1.3),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 12),
 
                   // Video Bağlantı Adresi ve Ekle Butonu
                   Container(
@@ -937,34 +958,46 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: TextField(
-                            decoration: InputDecoration(
+                            controller: _videoLinkController,
+                            decoration: const InputDecoration(
                               hintText: 'Video Bağlantı Adresi',
                               border: InputBorder.none,
                               hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ),
                         ),
+                        // Kırmızı Kare İçinde YouTube Oynat İkonu
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(8),
+                            color: const Color(0xFFDC2626),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Icon(Icons.play_arrow, color: Colors.red, size: 22),
+                          child: const Icon(Icons.play_arrow, color: Colors.white, size: 18),
                         ),
-                        const SizedBox(width: 5),
-                        TextButton(
+                        const SizedBox(width: 8),
+                        // Geçmiş (History) İkonu
+                        IconButton(
+                          icon: const Icon(Icons.history, color: Colors.black54, size: 22),
                           onPressed: () {},
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(width: 8),
+                        // Ekle Butonu (Fonksiyona bağlandı)
+                        TextButton(
+                          style: TextButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                          onPressed: _videoEkle,
                           child: const Text('Ekle', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // Kampanya Türü Seçim Sekmeleri (Kırmızı arka planlı)
+                  // Kampanya Türü Seçim Sekmeleri
                   Row(
                     children: [
                       Expanded(child: _buildTurButonu(0, Icons.play_arrow, 'İzlenme')),
@@ -979,12 +1012,12 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
                   // Kampanya Ayarları Başlık Çizgisi
                   Row(
                     children: const [
-                      Expanded(child: Divider(thickness: 1)),
+                      Expanded(child: Divider(thickness: 1, color: Colors.black12)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text('Kampanya Ayarları', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54)),
                       ),
-                      Expanded(child: Divider(thickness: 1)),
+                      Expanded(child: Divider(thickness: 1, color: Colors.black12)),
                     ],
                   ),
                   const SizedBox(height: 15),
@@ -1060,12 +1093,12 @@ class _KampanyaOlusturScreenState extends State<KampanyaOlusturScreen> {
                   // Kampanya Maliyeti Başlık Çizgisi
                   Row(
                     children: const [
-                      Expanded(child: Divider(thickness: 1)),
+                      Expanded(child: Divider(thickness: 1, color: Colors.black12)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text('Kampanya Maliyeti', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54)),
                       ),
-                      Expanded(child: Divider(thickness: 1)),
+                      Expanded(child: Divider(thickness: 1, color: Colors.black12)),
                     ],
                   ),
                   const SizedBox(height: 15),
