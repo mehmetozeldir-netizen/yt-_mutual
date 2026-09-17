@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const YtLoveApp());
 }
 
@@ -12,19 +13,43 @@ class YtLoveApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'YT Mutual - YT Love',
       debugShowCheckedModeBanner: false,
-      title: 'YT Love Clone',
-      theme: ThemeData.dark().copyWith(
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFFFF0000),
         scaffoldBackgroundColor: const Color(0xFF121212),
-        primaryColor: Colors.red,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1F1F1F),
-          elevation: 0,
+        cardColor: const Color(0xFF1E1E1E),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFFF0000),
+          secondary: Color(0xFFFFD700),
         ),
+        useMaterial3: true,
       ),
       home: const MainNavigationScreen(),
     );
   }
+}
+
+// Global Uygulama Durumu (Model & Data)
+class Campaign {
+  final String id;
+  final String videoUrl;
+  final String videoId;
+  final String type; // Views, Likes, Subscribers
+  final int targetCount;
+  int currentCount;
+  final int targetDuration;
+
+  Campaign({
+    required this.id,
+    required this.videoUrl,
+    required this.videoId,
+    required this.type,
+    required this.targetCount,
+    this.currentCount = 0,
+    required this.targetDuration,
+  });
 }
 
 class MainNavigationScreen extends StatefulWidget {
@@ -36,71 +61,109 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  int userCoins = 450;
+  int _userCoins = 600; // Başlangıç Jetonu
+  
+  final List<Campaign> _activeCampaigns = [];
 
   void _addCoins(int amount) {
     setState(() {
-      userCoins += amount;
+      _userCoins += amount;
     });
   }
 
-  void _deductCoins(int amount) {
+  bool _deductCoins(int amount) {
+    if (_userCoins >= amount) {
+      setState(() {
+        _userCoins -= amount;
+      });
+      return true;
+    }
+    return false;
+  }
+
+  void _addCampaign(Campaign campaign) {
     setState(() {
-      userCoins -= amount;
+      _activeCampaigns.add(campaign);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      WatchScreen(onCoinEarned: _addCoins),
-      CampaignScreen(userCoins: userCoins, onCoinDeduct: _deductCoins),
+      EarnCoinsScreen(onCoinsEarned: _addCoins),
+      CampaignsScreen(
+        campaigns: _activeCampaigns,
+        userCoins: _userCoins,
+        onDeductCoins: _deductCoins,
+        onCampaignCreated: _addCampaign,
+      ),
+      StoreScreen(userCoins: _userCoins, onBuyCoins: _addCoins),
+      ProfileScreen(userCoins: _userCoins),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('YT Love', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: Row(
+          children: [
+            const Icon(Icons.play_circle_fill, color: Colors.red, size: 28),
+            const SizedBox(width: 8),
+            const Text(
+              'YT Mutual',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
         actions: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.2),
+              color: Colors.amber.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.red, width: 1),
+              border: Border.all(color: Colors.amber, width: 1.5),
             ),
             child: Row(
               children: [
-                const Icon(Icons.favorite, color: Colors.red, size: 18),
+                const Icon(Icons.monetization_on, color: Colors.amber, size: 20),
                 const SizedBox(width: 6),
                 Text(
-                  '$userCoins',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  '$_userCoins',
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFF1F1F1F),
-        selectedItemColor: Colors.red,
+        selectedItemColor: Colors.redAccent,
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_fill),
-            label: 'Video İzle',
+            icon: Icon(Icons.ondemand_video),
+            label: 'İzle & Kazan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.campaign),
-            label: 'Kampanyalarım',
+            label: 'Kampanya',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.store),
+            label: 'Jeton Al',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profil',
           ),
         ],
       ),
@@ -108,229 +171,110 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-class WatchScreen extends StatefulWidget {
-  final Function(int) onCoinEarned;
-  const WatchScreen({super.key, required this.onCoinEarned});
+// -----------------------------------------------------------------------------
+// 1. İZLE & KAZAN EKRANI (Video Watch Screen)
+// -----------------------------------------------------------------------------
+class EarnCoinsScreen extends StatefulWidget {
+  final Function(int) onCoinsEarned;
+
+  const EarnCoinsScreen({super.key, required this.onCoinsEarned});
 
   @override
-  State<WatchScreen> createState() => _WatchScreenState();
+  State<EarnCoinsScreen> createState() => _EarnCoinsScreenState();
 }
 
-class _WatchScreenState extends State<WatchScreen> {
-  final List<Map<String, dynamic>> _videoQueue = [
+class _EarnCoinsScreenState extends State<EarnCoinsScreen> {
+  late YoutubePlayerController _ytController;
+  
+  // Havuzdaki Örnek Videolar
+  final List<Map<String, dynamic>> _videoPool = [
     {'id': 'dQw4w9WgXcQ', 'duration': 60, 'reward': 60},
-    {'id': '3JZ_D3ELwOQ', 'duration': 45, 'reward': 45},
-    {'id': 'L_jWHffIx5E', 'duration': 90, 'reward': 90},
+    {'id': '3JZ_D3ELwOQ', 'duration': 90, 'reward': 90},
+    {'id': 'L_jWHffIx5E', 'duration': 45, 'reward': 50},
   ];
 
   int _currentVideoIndex = 0;
-  YoutubePlayerController? _controller;
+  int _timerSeconds = 60;
+  int _rewardCoins = 60;
   Timer? _timer;
-  int _remainingSeconds = 60;
-  bool _autoNext = true;
-  bool _isVideoFinished = false;
+  bool _isPlaying = false;
+  bool _rewardClaimed = false;
 
   @override
   void initState() {
     super.initState();
-    _loadVideo();
+    _loadVideo(_currentVideoIndex);
   }
 
-  void _loadVideo() {
-    var currentVideo = _videoQueue[_currentVideoIndex];
-    _remainingSeconds = currentVideo['duration'];
-    _isVideoFinished = false;
+  void _loadVideo(int index) {
+    _timer?.cancel();
+    final video = _videoPool[index];
+    _timerSeconds = video['duration'];
+    _rewardCoins = video['reward'];
+    _rewardClaimed = false;
+    _isPlaying = false;
 
-    _controller?.dispose();
-    _controller = YoutubePlayerController(
-      initialVideoId: currentVideo['id'],
+    _ytController = YoutubePlayerController(
+      initialVideoId: video['id'],
       flags: const YoutubePlayerFlags(
-        autoPlay: true,
+        autoPlay: false,
         mute: false,
-        disableDragSeek: true,
-        controlsVisibleAtStart: false,
+        enableCaption: false,
       ),
-    );
+    )..addListener(_ytListener);
+  }
 
-    _startTimer();
+  void _ytListener() {
+    if (_ytController.value.isPlaying && !_isPlaying && !_rewardClaimed) {
+      setState(() {
+        _isPlaying = true;
+      });
+      _startTimer();
+    } else if (!_ytController.value.isPlaying && _isPlaying) {
+      setState(() {
+        _isPlaying = false;
+      });
+      _timer?.cancel();
+    }
   }
 
   void _startTimer() {
-    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
+      if (_timerSeconds > 0) {
         setState(() {
-          _remainingSeconds--;
+          _timerSeconds--;
         });
       } else {
         _timer?.cancel();
-        _onVideoCompleted();
+        if (!_rewardClaimed) {
+          _rewardClaimed = true;
+          widget.onCoinsEarned(_rewardCoins);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tebrikler! +$_rewardCoins Jeton Kazandınız!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     });
   }
 
-  void _onVideoCompleted() {
-    if (_isVideoFinished) return;
-    _isVideoFinished = true;
-
-    int reward = _videoQueue[_currentVideoIndex]['reward'];
-    widget.onCoinEarned(reward);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tebrikler! +$reward Puan Kazandınız 🎉'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    if (_autoNext) {
-      _nextVideo();
-    }
-  }
-
   void _nextVideo() {
-    _timer?.cancel();
+    _ytController.removeListener(_ytListener);
+    _ytController.dispose();
     setState(() {
-      _currentVideoIndex = (_currentVideoIndex + 1) % _videoQueue.length;
+      _currentVideoIndex = (_currentVideoIndex + 1) % _videoPool.length;
     });
-    _loadVideo();
+    _loadVideo(_currentVideoIndex);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _controller?.dispose();
+    _ytController.removeListener(_ytListener);
+    _ytController.dispose();
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var currentVideo = _videoQueue[_currentVideoIndex];
-
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 10),
-          if (_controller != null)
-            YoutubePlayer(
-              controller: _controller!,
-              showVideoProgressIndicator: true,
-              progressIndicatorColor: Colors.red,
-            ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _infoCard(Icons.timer, 'Kalan Süre', '$_remainingSeconds sn'),
-              _infoCard(Icons.favorite, 'Kazanılacak', '+${currentVideo['reward']} Puan'),
-            ],
-          ),
-          const SizedBox(height: 25),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.autorenew, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text('Otomatik Oynat (Auto Play)', style: TextStyle(color: Colors.white, fontSize: 15)),
-                  ],
-                ),
-                Switch(
-                  value: _autoNext,
-                  activeColor: Colors.red,
-                  onChanged: (val) {
-                    setState(() {
-                      _autoNext = val;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.grey),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
-            onPressed: _nextVideo,
-            icon: const Icon(Icons.skip_next, color: Colors.white),
-            label: const Text('Diğer Videoya Geç', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoCard(IconData icon, String title, String value) {
-    return Container(
-      width: 150,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.red, size: 28),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-}
-
-class CampaignScreen extends StatefulWidget {
-  final int userCoins;
-  final Function(int) onCoinDeduct;
-
-  const CampaignScreen({super.key, required this.userCoins, required this.onCoinDeduct});
-
-  @override
-  State<CampaignScreen> createState() => _CampaignScreenState();
-}
-
-class _CampaignScreenState extends State<CampaignScreen> {
-  final TextEditingController _urlController = TextEditingController();
-  int _targetViews = 10;
-  int _targetSeconds = 60;
-
-  int get _totalCost => _targetViews * (_targetSeconds ~/ 10) * 10;
-
-  void _createCampaign() {
-    if (_urlController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen geçerli bir YouTube URL girin.')),
-      );
-      return;
-    }
-
-    if (widget.userCoins < _totalCost) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Yetersiz Puan! Önce video izleyerek puan kazanın.')),
-      );
-      return;
-    }
-
-    widget.onCoinDeduct(_totalCost);
-    _urlController.clear();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Kampanya Başarıyla Eklendi! 🎉'), backgroundColor: Colors.green),
-    );
   }
 
   @override
@@ -338,62 +282,50 @@ class _CampaignScreenState extends State<CampaignScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAlignment.start,
         children: [
-          const Text('Yeni Kampanya Oluştur', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
-          TextField(
-            controller: _urlController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'YouTube Video Linkini Yapıştırın',
-              hintStyle: const TextStyle(color: Colors.grey),
-              filled: true,
-              fillColor: const Color(0xFF1F1F1F),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-              prefixIcon: const Icon(Icons.link, color: Colors.red),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: YoutubePlayer(
+              controller: _ytController,
+              showVideoProgressIndicator: true,
+              progressIndicatorColor: Colors.red,
             ),
           ),
           const SizedBox(height: 20),
-          _settingDropdown('İzlenme Sayısı Seç', [10, 50, 100, 500], _targetViews, (val) {
-            setState(() => _targetViews = val!);
-          }),
-          const SizedBox(height: 15),
-          _settingDropdown('İzlenme Süresi (Saniye)', [60, 90, 120, 180], _targetSeconds, (val) {
-            setState(() => _targetSeconds = val!);
-          }),
-          const SizedBox(height: 25),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Toplam Maliyet:', style: TextStyle(color: Colors.white, fontSize: 16)),
-                Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Colors.red, size: 20),
-                    const SizedBox(width: 5),
-                    Text('$_totalCost Puan', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                )
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainSystems.spaceAround,
+            children: [
+              _infoBox(
+                icon: Icons.timer,
+                color: Colors.blueAccent,
+                label: 'Kalan Süre',
+                value: '$_timerSeconds sn',
+              ),
+              _infoBox(
+                icon: Icons.monetization_on,
+                color: Colors.amber,
+                label: 'Kazanç',
+                value: '+$_rewardCoins Jeton',
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 50,
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
+              onPressed: _nextVideo,
+              icon: const Icon(Icons.skip_next),
+              label: const Text('Başka Video İzle', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              onPressed: _createCampaign,
-              child: const Text('Kampanyayı Başlat', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -401,35 +333,514 @@ class _CampaignScreenState extends State<CampaignScreen> {
     );
   }
 
-  Widget _settingDropdown(String title, List<int> options, int currentValue, ValueChanged<int?> onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              value: currentValue,
-              dropdownColor: const Color(0xFF1F1F1F),
-              isExpanded: true,
-              style: const TextStyle(color: Colors.white),
-              items: options.map((int val) {
+  Widget _infoBox({required IconData icon, required Color color, required String label, required String value}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+}
+
+// MAINSYSTEM HELPER
+class MainSystems {
+  static const MainAxisAlignment spaceAround = MainAxisAlignment.spaceAround;
+}
+
+// -----------------------------------------------------------------------------
+// 2. KAMPANYA LİSTESİ VE KAMPANYA OLUŞTURMA (YT LOVE CLONE)
+// -----------------------------------------------------------------------------
+class CampaignsScreen extends StatelessWidget {
+  final List<Campaign> campaigns;
+  final int userCoins;
+  final bool Function(int) onDeductCoins;
+  final Function(Campaign) onCampaignCreated;
+
+  const CampaignsScreen({
+    super.key,
+    required this.campaigns,
+    required this.userCoins,
+    required this.onDeductCoins,
+    required this.onCampaignCreated,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: campaigns.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.campaign_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'Henüz aktif bir kampanyanız yok.',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                  Text(
+                    'Aşağıdaki + butonuna basarak kampanya ekleyin.',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: campaigns.length,
+              itemBuilder: (context, index) {
+                final camp = campaigns[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: const Color(0xFF1E1E1E),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.redAccent.withOpacity(0.2),
+                      child: Icon(
+                        camp.type == 'Views'
+                            ? Icons.remove_red_eye
+                            : camp.type == 'Likes'
+                                ? Icons.thumb_up
+                                : Icons.person_add,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                    title: Text('${camp.type} Kampanyası', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        LinearProgressIndicator(
+                          value: camp.targetCount > 0 ? camp.currentCount / camp.targetCount : 0,
+                          backgroundColor: Colors.grey[800],
+                          color: Colors.redAccent,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'İlerleme: ${camp.currentCount} / ${camp.targetCount} (${camp.targetDuration} sn)',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCampaignScreen(
+                userCoins: userCoins,
+                onDeductCoins: onDeductCoins,
+                onCampaignCreated: onCampaignCreated,
+              ),
+            ),
+          );
+        },
+        backgroundColor: Colors.redAccent,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Kampanya Oluştur', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// KAMPANYA OLUŞTURMA DETAY SAYFASI (YT LOVE BİREBİR ARAYÜZÜ)
+// -----------------------------------------------------------------------------
+class CreateCampaignScreen extends StatefulWidget {
+  final int userCoins;
+  final bool Function(int) onDeductCoins;
+  final Function(Campaign) onCampaignCreated;
+
+  const CreateCampaignScreen({
+    super.key,
+    required this.userCoins,
+    required this.onDeductCoins,
+    required this.onCampaignCreated,
+  });
+
+  @override
+  State<CreateCampaignScreen> createState() => _CreateCampaignScreenState();
+}
+
+class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
+  final TextEditingController _urlController = TextEditingController();
+  
+  String _selectedType = 'Views'; // Views, Likes, Subscribers
+  int _targetCount = 10;
+  int _targetDuration = 60; // saniye
+  String? _validatedVideoId;
+  bool _isVideoValidated = false;
+
+  // YT Love Maliyet Hesaplama Algoritması
+  int get _totalCost {
+    int baseRate = 1;
+    if (_selectedType == 'Likes') baseRate = 2;
+    if (_selectedType == 'Subscribers') baseRate = 3;
+    
+    return _targetCount * (_targetDuration ~/ 60) * 60 * baseRate;
+  }
+
+  void _validateAndLoadVideo() {
+    final url = _urlController.text.trim();
+    final videoId = YoutubePlayer.convertUrlToId(url);
+
+    if (videoId != null && videoId.isNotEmpty) {
+      setState(() {
+        _validatedVideoId = videoId;
+        _isVideoValidated = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video Başarıyla Doğrulandı!'), backgroundColor: Colors.green),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geçersiz YouTube Video Bağlantısı!'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  void _submitCampaign() {
+    if (!_isVideoValidated || _validatedVideoId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen önce geçerli bir video URL doğrulayın.'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    final cost = _totalCost;
+    if (widget.userCoins < cost) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Yetersiz Bakiye! Gereken: $cost Jeton, Mevcut: ${widget.userCoins} Jeton'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Jeton Düş ve Kampanyayı Kaydet
+    final success = widget.onDeductCoins(cost);
+    if (success) {
+      final newCampaign = Campaign(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        videoUrl: _urlController.text.trim(),
+        videoId: _validatedVideoId!,
+        type: _selectedType,
+        targetCount: _targetCount,
+        targetDuration: _targetDuration,
+      );
+
+      widget.onCampaignCreated(newCampaign);
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kampanya Başarıyla Oluşturuldu ve Yayına Alındı!'), backgroundColor: Colors.green),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Kampanya Oluştur'),
+        backgroundColor: const Color(0xFF1F1F1F),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. URL Giriş Alanı
+            const Text('YouTube Video Linki', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _urlController,
+                    decoration: InputDecoration(
+                      hintText: 'https://www.youtube.com/watch?v=...',
+                      filled: true,
+                      fillColor: const Color(0xFF1E1E1E),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _validateAndLoadVideo,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  ),
+                  child: const Text('Ekle', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Video Önizleme Kartı
+            if (_isVideoValidated && _validatedVideoId != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Image.network(
+                      'https://img.youtube.com/vi/$_validatedVideoId/hqdefault.jpg',
+                      width: 100,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Video Onaylandı. Kampanya Ayarlarını Seçin.',
+                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // 2. Kampanya Tipi Seçimi
+            const Text('Kampanya Tipi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _typeChip('Views', 'İzlenme', Icons.remove_red_eye),
+                const SizedBox(width: 8),
+                _typeChip('Likes', 'Beğeni', Icons.thumb_up),
+                const SizedBox(width: 8),
+                _typeChip('Subscribers', 'Abone', Icons.person_add),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 3. Hedef Miktar Seçimi
+            const Text('Hedef Sayı (Miktar)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              value: _targetCount,
+              dropdownColor: const Color(0xFF1E1E1E),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+              ),
+              items: [10, 50, 100, 500, 1000].map((count) {
                 return DropdownMenuItem<int>(
-                  value: val,
-                  child: Text('$val'),
+                  value: count,
+                  child: Text('$count Hedef'),
                 );
               }).toList(),
-              onChanged: onChanged,
+              onChanged: (val) {
+                if (val != null) setState(() => _targetCount = val);
+              },
             ),
+            const SizedBox(height: 20),
+
+            // 4. Hedef Süre Seçimi
+            const Text('Gerekli İzlenme Süresi (Saniye)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              value: _targetDuration,
+              dropdownColor: const Color(0xFF1E1E1E),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+              ),
+              items: [45, 60, 90, 120, 180, 300].map((sec) {
+                return DropdownMenuItem<int>(
+                  value: sec,
+                  child: Text('$sec Saniye'),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _targetDuration = val);
+              },
+            ),
+            const SizedBox(height: 30),
+
+            // 5. Toplam Maliyet & Buton
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Toplam Maliyet:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      const Icon(Icons.monetization_on, color: Colors.amber),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$_totalCost Jeton',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _submitCampaign,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('KAMPANYAYI BAŞLAT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _typeChip(String type, String label, IconData icon) {
+    final isSelected = _selectedType == type;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedType = type),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.redAccent : const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? Colors.redAccent : Colors.white12),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: isSelected ? Colors.white : Colors.grey, size: 22),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 3. MAĞAZA EKRANI (Store Screen)
+// -----------------------------------------------------------------------------
+class StoreScreen extends StatelessWidget {
+  final int userCoins;
+  final Function(int) onBuyCoins;
+
+  const StoreScreen({super.key, required this.userCoins, required this.onBuyCoins});
+
+  @override
+  Widget build(BuildContext context) {
+    final packages = [
+      {'coins': 1500, 'price': '19.99 TL'},
+      {'coins': 5000, 'price': '49.99 TL'},
+      {'coins': 12000, 'price': '99.99 TL'},
+      {'coins': 30000, 'price': '229.99 TL'},
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: packages.length,
+      itemBuilder: (context, index) {
+        final pack = packages[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          color: const Color(0xFF1E1E1E),
+          child: ListTile(
+            leading: const Icon(Icons.monetization_on, color: Colors.amber, size: 32),
+            title: Text('${pack['coins']} Jeton', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            trailing: ElevatedButton(
+              onPressed: () {
+                onBuyCoins(pack['coins'] as int);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${pack['coins']} Jeton hesabınıza eklendi!'), backgroundColor: Colors.green),
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+              child: Text(pack['price'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 4. PROFİL EKRANI (Profile Screen)
+// -----------------------------------------------------------------------------
+class ProfileScreen extends StatelessWidget {
+  final int userCoins;
+
+  const ProfileScreen({super.key, required this.userCoins});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.redAccent,
+            child: Icon(Icons.person, size: 50, color: Colors.white),
+          ),
+          const SizedBox(height: 12),
+          const Text('Kullanıcı', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 24),
+          Card(
+            color: const Color(0xFF1E1E1E),
+            child: ListTile(
+              leading: const Icon(Icons.account_balance_wallet, color: Colors.amber),
+              title: const Text('Mevcut Bakiye'),
+              trailing: Text('$userCoins Jeton', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.amber)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
