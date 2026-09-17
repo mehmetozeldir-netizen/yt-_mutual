@@ -7,11 +7,15 @@ workflows:
       flutter: stable
       java: 17
     scripts:
+      - name: Re-generate Android folder
+        script: |
+          rm -rf android
+          flutter create . --platforms=android
       - name: Get Flutter packages
         script: |
           flutter pub get
       - name: Build Android APK
         script: |
-          flutter build apk --release
+          flutter build apk --release --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
