@@ -30,7 +30,7 @@ class MainHomeScreen extends StatefulWidget {
 }
 
 class _MainHomeScreenState extends State<MainHomeScreen> {
-  int _currentIndex = 1; // Başlangıç "İzle" sekmesi
+  int _currentIndex = 1; 
   int _userCoins = 178;
   bool _isAutoPlay = false;
 
@@ -65,9 +65,14 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         onAddCampaign: addCampaign,
         onDeductCoins: updateCoins,
       ),
-      WatchScreen(userCoins: _userCoins, onRewardEarned: updateCoins, isAutoPlay: _isAutoPlay, onToggleAuto: (val) => setState(() => _isAutoPlay = val)),
-      SubscribeScreen(userCoins: _userCoins, onRewardEarned: updateCoins),
-      LikesScreen(userCoins: _userCoins, onRewardEarned: updateCoins),
+      WatchScreen(
+        userCoins: _userCoins, 
+        onRewardEarned: updateCoins, 
+        isAutoPlay: _isAutoPlay, 
+        onToggleAuto: (val) => setState(() => _isAutoPlay = val),
+      ),
+      const SubscribeScreen(),
+      const LikesScreen(),
     ];
 
     return Scaffold(
@@ -80,10 +85,9 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        title: Row(
-          children: const [
-            Text('yt mutual', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.5)),
-          ],
+        title: const Text(
+          'yt mutual', 
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.5),
         ),
         actions: [
           Padding(
@@ -199,7 +203,13 @@ class WatchScreen extends StatefulWidget {
   final bool isAutoPlay;
   final Function(bool) onToggleAuto;
 
-  const WatchScreen({super.key, required this.userCoins, required this.onRewardEarned, required this.isAutoPlay, required this.onToggleAuto});
+  const WatchScreen({
+    super.key, 
+    required this.userCoins, 
+    required this.onRewardEarned, 
+    required this.isAutoPlay, 
+    required this.onToggleAuto,
+  });
 
   @override
   State<WatchScreen> createState() => _WatchScreenState();
@@ -223,7 +233,9 @@ class _WatchScreenState extends State<WatchScreen> {
           timeLeft = 61;
         });
         widget.onRewardEarned(48);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')));
+        }
       }
     });
   }
@@ -325,7 +337,10 @@ class _WatchScreenState extends State<WatchScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       ),
                       onPressed: isRunning ? null : startTimer,
-                      child: Text(isRunning ? 'Süre İşliyor ($timeLeft sn)...' : 'Değiştir', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        isRunning ? 'Süre İşliyor ($timeLeft sn)...' : 'Değiştir', 
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ),
@@ -340,59 +355,23 @@ class _WatchScreenState extends State<WatchScreen> {
 }
 
 class SubscribeScreen extends StatelessWidget {
-  final int userCoins;
-  final Function(int) onRewardEarned;
-  const SubscribeScreen({super.key, required this.userCoins, required this.onRewardEarned});
+  const SubscribeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.subscriptions, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          const Text('Abone Ol & Kazan Modülü', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              onRewardEarned(90);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('+90 Puan eklendi!')));
-            },
-            child: const Text('Abone Ol Görevini Tamamla', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    return const Center(
+      child: Text('Abone Ol Modülü', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
     );
   }
 }
 
 class LikesScreen extends StatelessWidget {
-  final int userCoins;
-  final Function(int) onRewardEarned;
-  const LikesScreen({super.key, required this.userCoins, required this.onRewardEarned});
+  const LikesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.thumb_up, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          const Text('Beğen & Kazan Modülü', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              onRewardEarned(40);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('+40 Puan eklendi!')));
-            },
-            child: const Text('Beğeni Görevini Tamamla', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+    return const Center(
+      child: Text('Beğen Modülü', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
     );
   }
 }
@@ -403,11 +382,18 @@ class CampaignsScreen extends StatelessWidget {
   final Function(Map<String, dynamic>) onAddCampaign;
   final Function(int) onDeductCoins;
 
-  const CampaignsScreen({super.key, required this.campaigns, required this.userCoins, required this.onAddCampaign, required this.onDeductCoins});
+  const CampaignsScreen({
+    super.key, 
+    required this.campaigns, 
+    required this.userCoins, 
+    required this.onAddCampaign, 
+    required_onDeductCoins,
+  }) : onDeductCoins = _onDeductCoins;
+
+  final Function(int) _onDeductCoins;
 
   void _openCreateDialog(BuildContext context) {
     final urlController = TextEditingController();
-    String type = 'İzlenme';
     int viewCount = 25;
     int duration = 60;
     int totalCost = 1500;
@@ -513,7 +499,7 @@ class CampaignsScreen extends StatelessWidget {
                       onDeductCoins(-totalCost);
                       onAddCampaign({
                         'title': 'Yeni YouTube Kampanyası',
-                        'type': type,
+                        'type': 'İzlenme',
                         'current': 0,
                         'target': viewCount,
                         'thumbnail': 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
