@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "906788470859",
+    "project_id": "yt-mutual",
+    "storage_bucket": "yt-mutual.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906788470859:android:0cd129af6816f289024dce",
+        "android_client_info": {
+          "package_name": "com.ytmutual.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "906788470859-a57l23o6b4n3j40e6f1h2vkl4eafmbda.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsv5drzPT1nJax06QuodJFkw61tZNQJGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "906788470859-a57l23o6b4n3j40e6f1h2vkl4eafmbda.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
