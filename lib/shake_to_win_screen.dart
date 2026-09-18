@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'dart:math';
+import 'dart0:math';
 import 'dart:async';
 
 class ShakeToWinScreen extends StatefulWidget {
@@ -22,14 +22,24 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
   }
 
   void _startListening() {
-    _sensorSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
-      if (_hasWon) return;
+    try {
+      _sensorSubscription = accelerometerEventStream().listen(
+        (AccelerometerEvent event) {
+          if (_hasWon) return;
 
-      double acceleration = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
-      if (acceleration > 15) {
-        _triggerWin();
-      }
-    });
+          double acceleration = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
+          if (acceleration > 15) {
+            _triggerWin();
+          }
+        },
+        onError: (error) {
+          // Sensör hatası durumunda uygulamanın çökmesini engeller
+        },
+        cancelOnError: true,
+      );
+    } catch (e) {
+      // Sensörü desteklemeyen cihazlar için güvenlik önlemi
+    }
   }
 
   void _triggerWin() {
@@ -66,16 +76,34 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
                     "Tebrikler! $_wonPoints Puan Kazandınız!",
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _hasWon = false;
+                      });
+                    },
+                    child: const Text("Tekrar Dene"),
+                  ),
                 ],
               )
-            : const Column(
+            : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.vibration, size: 80, color: Colors.blueGrey),
-                  SizedBox(height: 20),
-                  Text(
+                  const Icon(Icons.vibration, size: 80, color: Colors.blueGrey),
+                  const SizedBox(height: 20),
+                  const Text(
                     "Puan Kazanmak İçin Telefonu Salla!",
                     style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: _triggerWin,
+                    child: const Text(
+                      "Test Et (Salla)",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
