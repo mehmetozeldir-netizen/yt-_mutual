@@ -8,8 +8,14 @@ import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Firebase başlatma alanı
   await Firebase.initializeApp();
+  
+  // Çevrimdışı ve önbellek desteği ile puan kaybolmasını engelleme
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
+  
   runApp(const YtMutualApp());
 }
 
@@ -47,14 +53,16 @@ class _YtMutualAppState extends State<YtMutualApp> {
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF121212), foregroundColor: Colors.white),
         useMaterial3: true,
       ),
-      home: const AuthWrapper(),
+      home: AuthWrapper(toggleTheme: toggleTheme, isDarkMode: isDarkMode),
     );
   }
 }
 
-// OTURUM KONTROLÜ VE VERİTABANI BAĞLANTISI
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  final VoidCallback toggleTheme;
+  final bool isDarkMode;
+
+  const AuthWrapper({Key? key, required this.toggleTheme, required this.isDarkMode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +72,13 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        
-        // Kullanıcı oturum açmamışsa anonim oturum başlat (Puan kaybını önler)
+
         if (!snapshot.hasData) {
           FirebaseAuth.instance.signInAnonymously();
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        return HomeScreen(user: snapshot.data!);
+        return HomeScreen(user: snapshot.data!, toggleTheme: toggleTheme, isDarkMode: isDarkMode);
       },
     );
   }
@@ -79,7 +86,15 @@ class AuthWrapper extends StatelessWidget {
 
 class HomeScreen extends StatefulWidget {
   final User user;
-  const HomeScreen({Key? key, required this.user}) : super(key: key);
+  final VoidCallback toggleTheme;
+  final bool isDarkMode;
+
+  const HomeScreen({
+    Key? key,
+    required this.user,
+    required this.toggleTheme,
+    required this.isDarkMode,
+  }) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -87,23 +102,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 1;
-  bool isAutomatic = false;
 
-  // VERİTABANINDAN GÜVENLİ PUAN ARTIRMA/EKSİLTME
   Future<void> updatePoints(int amount) async {
     final userRef = FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
-    
+
     await FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot snapshot = await transaction.get(userRef);
       if (!snapshot.exists) {
         transaction.set(userRef, {
-          'name': widget.user.displayName ?? 'Kullanıcı',
-          'email': widget.user.email ?? 'Giriş Yapılmadı',
+          'name': widget.user.displayName ?? 'Mehmet Özel',
+          'email': widget.user.email ?? 'mehmet@example.com',
           'points': 100 + amount,
         });
       } else {
-        int newPoints = ((snapshot.data() as Map<String, dynamic>)['points'] ?? 0) + amount;
-        transaction.update(userRef, {'points': newPoints});
+        int currentPoints = (snapshot.data() as Map<String, dynamic>)['points'] ?? 0;
+        transaction.update(userRef, {'points': currentPoints + amount});
       }
     });
   }
@@ -157,9 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
             index: _selectedIndex,
             children: [
               const SizedBox(),
-              _buildWatchTab(),
-              _buildSubscribeTab(),
-              _buildLikeTab(),
+              _buildTaskCard("Video İzle", 48, Icons.play_circle_fill),
+              _buildTaskCard("Abone Ol", 210, Icons.subscriptions),
+              _buildTaskCard("Beğen", 150, Icons.thumb_up),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -180,7 +193,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // YAN MENÜ (DRAWER)
+  Widget _buildTaskCard(String title, int reward, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 80, color: Colors.red),
+          const SizedBox(height: 20),
+          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            ),
+            onPressed: () => updatePoints(reward),
+            child: Text("Görevi Tamamla (+$reward Puan)"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCustomDrawer(BuildContext context, int points) {
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.82,
@@ -195,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     radius: 28,
                     backgroundColor: const Color(0xFF8B5CF6),
                     child: Text(
-                      (widget.user.displayName ?? 'A')[0].toUpperCase(),
+                      (widget.user.displayName ?? 'M')[0].toUpperCase(),
                       style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -204,10 +239,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.user.displayName ?? 'Misafir Kullanıcı', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text(widget.user.email ?? 'Hesap Bağlanmadı', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(widget.user.displayName ?? 'Mehmet Özel', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(widget.user.email ?? 'Giriş Yapıldı', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),
+                  ),
+                  IconButton(
+                    icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round),
+                    onPressed: widget.toggleTheme,
                   ),
                 ],
               ),
@@ -217,7 +256,23 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.sentiment_satisfied_alt_outlined),
+                    leading: const Icon(Icons.stars, color: Colors.orange),
+                    title: const Text("Puan Satın Al"),
+                    onTap: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Mağaza bağlantısı hazırlanıyor.")));
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.workspace_premium, color: Colors.amber),
+                    title: const Text("VIP Üye Ol"),
+                    onTap: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("VIP sistemi yakında aktif.")));
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.vibration, color: Colors.redAccent),
                     title: const Text("Salla & Kazan"),
                     onTap: () {
                       Navigator.pop(context);
@@ -225,10 +280,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.info_outline),
+                    leading: const Icon(Icons.privacy_tip_outlined),
                     title: const Text("Gizlilik Politikası"),
                     onTap: () async {
-                      const url = 'https://harbyapps.com/privacy';
+                      const url = 'https://google.com';
                       if (await canLaunchUrl(Uri.parse(url))) await launchUrl(Uri.parse(url));
                     },
                   ),
@@ -244,36 +299,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  Widget _buildWatchTab() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () => updatePoints(48), // Örnek puan kazanımı
-        child: const Text("Video İzle (+48 Puan Kazan)"),
-      ),
-    );
-  }
-
-  Widget _buildSubscribeTab() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () => updatePoints(210),
-        child: const Text("Abone Ol (+210 Puan Kazan)"),
-      ),
-    );
-  }
-
-  Widget _buildLikeTab() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () => updatePoints(150),
-        child: const Text("Beğen (+150 Puan Kazan)"),
-      ),
-    );
-  }
 }
 
-// SALLA KAZAN (GERÇEK SENSÖR ENTEGRASYONLU)
 class ShakeToWinScreen extends StatefulWidget {
   final String userId;
   const ShakeToWinScreen({Key? key, required this.userId}) : super(key: key);
@@ -289,7 +316,6 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
   @override
   void initState() {
     super.initState();
-    // İvmeölçer dinleyicisi
     _subscription = accelerometerEventStream().listen((AccelerometerEvent event) {
       double gX = event.x / 9.81;
       double gY = event.y / 9.81;
@@ -297,7 +323,6 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
 
       double gForce = double.parse((gX * gX + gY * gY + gZ * gZ).toString());
 
-      // Fiziksel sallama eşiği
       if (gForce > 2.5 && !_hasRewarded) {
         _hasRewarded = true;
         _grantReward();
@@ -311,7 +336,7 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Tebrikler! Telefonu sallayarak 50 Puan Kazandınız.")),
+        const SnackBar(content: Text("Tebrikler! Telefonu sallayarak +50 Puan Kazandınız.")),
       );
     }
   }
@@ -340,7 +365,6 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
   }
 }
 
-// KAMPANYA OLUŞTURMA
 class CreateCampaignScreen extends StatelessWidget {
   final String userId;
   const CreateCampaignScreen({Key? key, required this.userId}) : super(key: key);
@@ -349,7 +373,7 @@ class CreateCampaignScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Kampanya Oluştur")),
-      body: const Center(child: Text("Kampanya Form Alanı")),
+      body: const Center(child: Text("Kampanya Oluşturma Ekranı")),
     );
   }
 }
