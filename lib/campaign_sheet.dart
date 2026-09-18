@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CampaignBottomSheet extends StatefulWidget {
   const CampaignBottomSheet({Key? key}) : super(key: key);
@@ -51,9 +50,26 @@ class _CampaignBottomSheetState extends State<CampaignBottomSheet> {
                   icon: const Icon(Icons.history, size: 30),
                   onPressed: () {},
                 ),
-                IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.youtube, color: Colors.red, size: 30),
-                  onPressed: () {},
+                GestureDetector(
+                  onTap: () {},
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'logo.png',
+                          width: 32,
+                          height: 32,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.play_arrow, size: 32, color: Colors.red),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
