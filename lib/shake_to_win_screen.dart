@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'dart0:math';
+import 'dart:math';
 import 'dart:async';
 
 class ShakeToWinScreen extends StatefulWidget {
@@ -32,14 +32,10 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
             _triggerWin();
           }
         },
-        onError: (error) {
-          // Sensör hatası durumunda uygulamanın çökmesini engeller
-        },
+        onError: (error) {},
         cancelOnError: true,
       );
-    } catch (e) {
-      // Sensörü desteklemeyen cihazlar için güvenlik önlemi
-    }
+    } catch (e) {}
   }
 
   void _triggerWin() {
