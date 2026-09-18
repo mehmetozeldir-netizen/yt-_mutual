@@ -22,7 +22,6 @@ class _ShakeToWinScreenState extends State<ShakeToWinScreen> {
   }
 
   void _startListening() {
-    // Güncel sensors_plus paketi için accelerometerEventStream kullanılmıştır.
     _sensorSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
       if (_hasWon) return;
 
