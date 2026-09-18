@@ -2,17 +2,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Sallama hareketi sensörü için
-  sensors_plus: ^6.1.0
-
-  # Dış bağlantılar (Gizlilik, SSS, Web) açmak için
-  url_launcher: ^6.3.1
-
-  # Uygulama içi satın alma (VIP & Puan Satın Al)
-  in_app_purchase: ^3.2.0
-
-  # Google Giriş & Firebase Veritabanı için
+  # Firebase Entegrasyon Paketleri
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
   google_sign_in: ^6.2.1
+
+  # Sensör ve Dış Bağlantı Paketleri
+  sensors_plus: ^6.1.0
+  url_launcher: ^6.3.1
