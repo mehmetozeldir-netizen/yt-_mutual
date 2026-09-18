@@ -1,29 +1,18 @@
-name: yt_mutual
-description: Yt Mutual Application
-publish_to: 'none'
-version: 1.0.0+1
-
-environment:
-  sdk: '>=3.0.0 <4.0.0'
-
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  sensors_plus: ^6.0.0
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^2.0.0
-  flutter_launcher_icons: ^0.13.1
+  # Sallama hareketi sensörü için
+  sensors_plus: ^6.1.0
 
-flutter_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/logo.png"
+  # Dış bağlantılar (Gizlilik, SSS, Web) açmak için
+  url_launcher: ^6.3.1
 
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/
+  # Uygulama içi satın alma (VIP & Puan Satın Al)
+  in_app_purchase: ^3.2.0
+
+  # Google Giriş & Firebase Veritabanı için
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  google_sign_in: ^6.2.1
