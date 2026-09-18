@@ -2,45 +2,46 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const YtLoveApp());
+  runApp(const YtMutualApp());
 }
 
-class YtLoveApp extends StatelessWidget {
-  const YtLoveApp({super.key});
+class YtMutualApp extends StatelessWidget {
+  const YtMutualApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'YtLove Pro',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF121212),
+      title: 'Yt Mutual',
+      theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: Colors.white,
         primaryColor: Colors.red,
       ),
-      home: const YtLoveHomeScreen(),
+      home: const MainHomeScreen(),
     );
   }
 }
 
-class YtLoveHomeScreen extends StatefulWidget {
-  const YtLoveHomeScreen({super.key});
+class MainHomeScreen extends StatefulWidget {
+  const MainHomeScreen({super.key});
 
   @override
-  State<YtLoveHomeScreen> createState() => _YtLoveHomeScreenState();
+  State<MainHomeScreen> createState() => _MainHomeScreenState();
 }
 
-class _YtLoveHomeScreenState extends State<YtLoveHomeScreen> {
-  int _currentIndex = 0;
-  int _userCoins = 850;
+class _MainHomeScreenState extends State<MainHomeScreen> {
+  int _currentIndex = 1; // Başlangıç "İzle" sekmesi
+  int _userCoins = 178;
+  bool _isAutoPlay = false;
 
-  final List<CampaignItem> _userCampaigns = [
-    Klip Tanıtım Projesiani(
-      title: 'Klip Tanıtım Projesi',
-      type: 'İzlenme',
-      current: 12,
-      target: 40,
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-    ),
+  final List<Map<String, dynamic>> _campaigns = [
+    {
+      'title': 'Klip Tanıtım Projesi',
+      'type': 'İzlenme',
+      'current': 12,
+      'target': 40,
+      'thumbnail': 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+    }
   ];
 
   void updateCoins(int amount) {
@@ -49,58 +50,66 @@ class _YtLoveHomeScreenState extends State<YtLoveHomeScreen> {
     });
   }
 
-  void addCampaign(String title, String type, int target) {
+  void addCampaign(Map<String, dynamic> newCamp) {
     setState(() {
-      _userCampaigns.insert(
-        0,
-        Klip Tanıtım Projesiani(
-          title: title,
-          type: type,
-          current: 0,
-          target: target,
-          thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-        ),
-      );
+      _campaigns.insert(0, newCamp);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      TaskListView(category: 'views', title: 'İzle & Kazan', reward: 60, duration: 45, onRewardEarned: updateCoins),
-      TaskListView(category: 'subs', title: 'Abone Ol & Kazan', reward: 90, duration: 30, onRewardEarned: updateCoins),
-      TaskListView(category: 'likes', title: 'Beğen & Kazan', reward: 40, duration: 20, onRewardEarned: updateCoins),
-      CampaignsView(campaigns: _userCampaigns, userCoins: _userCoins, onAddCampaign: addCampaign, onDeductCoins: updateCoins),
+      CampaignsScreen(
+        campaigns: _campaigns,
+        userCoins: _userCoins,
+        onAddCampaign: addCampaign,
+        onDeductCoins: updateCoins,
+      ),
+      WatchScreen(userCoins: _userCoins, onRewardEarned: updateCoins, isAutoPlay: _isAutoPlay, onToggleAuto: (val) => setState(() => _isAutoPlay = val)),
+      SubscribeScreen(userCoins: _userCoins, onRewardEarned: updateCoins),
+      LikesScreen(userCoins: _userCoins, onRewardEarned: updateCoins),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1F1F1F),
-        elevation: 1,
-        title: const Text('YtLove Pro', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18)),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black87),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        title: Row(
+          children: const [
+            Text('yt mutual', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.5)),
+          ],
+        ),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12, top: 10, bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C2C2C),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade800),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.monetization_on, color: Colors.amber, size: 16),
-                const SizedBox(width: 6),
-                Text('$_userCoins', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 14)),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Text('$_userCoins', style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.favorite, color: Colors.red, size: 18),
+                ],
+              ),
             ),
           ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: Colors.white,
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
@@ -110,277 +119,417 @@ class _YtLoveHomeScreenState extends State<YtLoveHomeScreen> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle_fill), label: 'İzle'),
+          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Kampanya'),
+          BottomNavigationBarItem(icon: Icon(Icons.play_arrow), label: 'İzle'),
           BottomNavigationBarItem(icon: Icon(Icons.subscriptions), label: 'Abone Ol'),
           BottomNavigationBarItem(icon: Icon(Icons.thumb_up), label: 'Beğen'),
-          BottomNavigationBarItem(icon: Icon(Icons.campaign), label: 'Kampanyalar'),
         ],
       ),
     );
   }
 }
 
-class Klip Tanıtım Projesiani {
-  final String title;
-  final String type;
-  int current;
-  final int target;
-  final String thumbnail;
-
-  Klip Tanıtım Projesiani({
-    required this.title,
-    required this.type,
-    required this.current,
-    required this.target,
-    required this.thumbnail,
-  });
-}
-
-class TaskItemData {
-  final String title;
-  final int duration;
-  final int reward;
-  final String videoId;
-
-  TaskItemData({required this.title, required this.duration, required this.reward, required this.videoId});
-}
-
-class TaskListView extends StatefulWidget {
-  final String category;
-  final String title;
-  final int reward;
-  final int duration;
-  final Function(int) onRewardEarned;
-
-  const TaskListView({
-    super.key,
-    required this.category,
-    required this.title,
-    required this.reward,
-    required this.duration,
-    required this.onRewardEarned,
-  });
+class AppDrawer extends StatelessWidget {
+  const AppDrawer({super.key});
 
   @override
-  State<TaskListView> createState() => _TaskListViewState();
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: Colors.white,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.white),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(child: Text('A', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold))),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('Ahmet Akın', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    SizedBox(height: 4),
+                    Text('akina6126@gmail.com', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          _drawerItem(Icons.favorite_border, 'Puan Satın Al'),
+          _drawerItem(Icons.verified_outlined, 'VIP Üye Ol'),
+          _drawerItem(Icons.card_giftcard, 'Salla & Kazan'),
+          _drawerItem(Icons.help_outline, 'Sıkça Sorulan Sorular'),
+          _drawerItem(Icons.privacy_tip_outlined, 'Gizlilik Politikası'),
+          _drawerItem(Icons.share_outlined, 'Uygulamayı Paylaş'),
+          _drawerItem(Icons.star_border, 'Uygulamayı Değerlendir'),
+          _drawerItem(Icons.chat_bubble_outline, 'Bize Ulaşın'),
+          _drawerItem(Icons.logout, 'Çıkış yap'),
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('Sürüm: 3.4.21', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerItem(IconData icon, String title) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black87, size: 22),
+      title: Text(title, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+      onTap: () {},
+    );
+  }
 }
 
-class _TaskListViewState extends State<TaskListView> {
-  final Map<int, bool> _completedTasks = {};
-  final Map<int, int> _activeTimers = {};
-  final Map<int, Timer?> _timers = {};
+class WatchScreen extends StatefulWidget {
+  final int userCoins;
+  final Function(int) onRewardEarned;
+  final bool isAutoPlay;
+  final Function(bool) onToggleAuto;
 
-  final List<TaskItemData> tasks = [
-    TaskItemData(title: 'Özgürlük ve Müzik Klip Projesi', duration: 45, reward: 60, videoId: 'dQw4w9WgXcQ'),
-    TaskItemData(title: 'Akustik Gitar Solo & Melodi', duration: 30, reward: 45, videoId: '3JZ_D3ELwOQ'),
-    TaskItemData(title: 'Stüdyo Kayıt Günlükleri', duration: 40, reward: 55, videoId: 'kJQP7kiw5Fk'),
-  ];
+  const WatchScreen({super.key, required this.userCoins, required this.onRewardEarned, required this.isAutoPlay, required this.onToggleAuto});
 
-  void startTaskTimer(int index) {
-    setState(() {
-      _activeTimers[index] = widget.duration;
-    });
+  @override
+  State<WatchScreen> createState() => _WatchScreenState();
+}
 
-    _timers[index]?.cancel();
-    _timers[index] = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_activeTimers[index]! > 1) {
-        setState(() {
-          _activeTimers[index] = _activeTimers[index]! - 1;
-        });
+class _WatchScreenState extends State<WatchScreen> {
+  int timeLeft = 61;
+  Timer? _timer;
+  bool isRunning = false;
+
+  void startTimer() {
+    if (isRunning) return;
+    setState(() => isRunning = true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (timeLeft > 1) {
+        setState(() => timeLeft--);
       } else {
         timer.cancel();
         setState(() {
-          _activeTimers.remove(index);
-          _completedTasks[index] = true;
+          isRunning = false;
+          timeLeft = 61;
         });
-        widget.onRewardEarned(widget.reward);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tebrikler! +${widget.reward} Coin hesabınıza eklendi.')),
-        );
+        widget.onRewardEarned(48);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tebrikler! +48 Puan eklendi.')));
       }
     });
   }
 
   @override
   void dispose() {
-    for (var timer in _timers.values) {
-      timer?.cancel();
-    }
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
-        final task = tasks[index];
-        final isCompleted = _completedTasks[index] ?? false;
-        final activeTime = _activeTimers[index];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF333333)),
-          ),
-          child: Column(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Stack(
+              Row(
                 children: [
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    color: Colors.black,
-                    child: Image.network(
-                      'https://img.youtube.com/vi/${task.videoId}/hqdefault.jpg',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.videocam, color: Colors.grey, size: 40)),
-                    ),
+                  const Text('Otomatik', style: TextStyle(fontSize: 15, color: Colors.black87)),
+                  const SizedBox(width: 8),
+                  Switch(
+                    value: widget.isAutoPlay,
+                    activeColor: Colors.red,
+                    onChanged: widget.onToggleAuto,
                   ),
-                  if (activeTime != null)
-                    Container(
-                      height: 180,
-                      color: Colors.black87,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '$activeTime',
-                              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.amber),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text('Süre Bitiyor, Lütfen Bekleyin...', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(task.title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Text('Ödül: ', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                              Text('+${widget.reward} Coin', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 13)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isCompleted ? Colors.grey.shade800 : Colors.red,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      ),
-                      onPressed: (isCompleted || activeTime != null) ? null : () => startTaskTimer(index),
-                      child: Text(
-                        isCompleted ? 'Tamamlandı' : 'İzle & Kazan',
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              IconButton(icon: const Icon(Icons.info_outline, color: Colors.black54), onPressed: () {}),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [BoxShadow(color: Colors.grey.shade100, blurRadius: 10, spreadRadius: 2)],
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      height: 220,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      child: Image.network('https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', fit: BoxFit.cover),
+                    ),
+                    const Icon(Icons.play_circle_fill, color: Colors.red, size: 64),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.favorite, color: Colors.black87, size: 20),
+                              SizedBox(width: 6),
+                              Text('48', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const Text('Puan', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.timer_outlined, color: Colors.black87, size: 20),
+                              const SizedBox(width: 6),
+                              Text('$timeLeft', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const Text('Saniye', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      ),
+                      onPressed: isRunning ? null : startTimer,
+                      child: Text(isRunning ? 'Süre İşliyor ($timeLeft sn)...' : 'Değiştir', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class CampaignsView extends StatelessWidget {
-  final List<Klip Tanıtım Projesiani> campaigns;
+class SubscribeScreen extends StatelessWidget {
   final int userCoins;
-  final Function(String, String, int) onAddCampaign;
+  final Function(int) onRewardEarned;
+  const SubscribeScreen({super.key, required this.userCoins, required this.onRewardEarned});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.subscriptions, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text('Abone Ol & Kazan Modülü', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              onRewardEarned(90);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('+90 Puan eklendi!')));
+            },
+            child: const Text('Abone Ol Görevini Tamamla', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LikesScreen extends StatelessWidget {
+  final int userCoins;
+  final Function(int) onRewardEarned;
+  const LikesScreen({super.key, required this.userCoins, required this.onRewardEarned});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.thumb_up, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          const Text('Beğen & Kazan Modülü', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              onRewardEarned(40);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('+40 Puan eklendi!')));
+            },
+            child: const Text('Beğeni Görevini Tamamla', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CampaignsScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> campaigns;
+  final int userCoins;
+  final Function(Map<String, dynamic>) onAddCampaign;
   final Function(int) onDeductCoins;
 
-  const CampaignsView({
-    super.key,
-    required this.campaigns,
-    required this.userCoins,
-    required this.onAddCampaign,
-    required this.onDeductCoins,
-  });
+  const CampaignsScreen({super.key, required this.campaigns, required this.userCoins, required this.onAddCampaign, required this.onDeductCoins});
 
-  void _showCreateDialog(BuildContext context) {
+  void _openCreateDialog(BuildContext context) {
     final urlController = TextEditingController();
-    String selectedType = 'İzlenme';
-    int targetCount = 20;
+    String type = 'İzlenme';
+    int viewCount = 25;
+    int duration = 60;
+    int totalCost = 1500;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1F1F1F),
-          title: const Text('Yeni Kampanya Oluştur', style: TextStyle(fontSize: 16, color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: urlController,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: const InputDecoration(
-                  labelText: 'YouTube Video URL',
-                  labelStyle: TextStyle(color: Colors.grey),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.red)),
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Kampanya Oluştur', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        Text('$userCoins', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.favorite, color: Colors.red, size: 18),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedType,
-                dropdownColor: const Color(0xFF2C2C2C),
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Kampanya Türü', labelStyle: TextStyle(color: Colors.grey)),
-                items: ['İzlenme', 'Abone', 'Beğeni'].map((type) {
-                  return DropdownMenuItem(value: type, child: Text(type));
-                }).toList,
-                onChanged: (val) => selectedType = val!,
-              ),
-            ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
+                  child: const Text(
+                    '• Aynı video için çok sayıda kampanya oluşturmayın.\n• Kampanyaların YT\'a yansıması 72 saati bulabilir.\n• Politikaya aykırı kampanyalar silinir.\n• Detaylı analiz için YT Studio uygulamasını kullanın.\n• Kampanyaların tamamlanma süresi değişkenlik gösterebilir.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54, height: 1.4),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: urlController,
+                  decoration: InputDecoration(
+                    labelText: 'Video Bağlantı Adresi',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.play_arrow, color: Colors.red),
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Kampanya Ayarları', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('İzlenme Sayısı'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                      child: Text('$viewCount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Gereken Süre (sn.)'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                      child: Text('$duration', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Toplam Tutar', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        Text('$totalCost', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.favorite, color: Colors.red, size: 18),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+                    onPressed: () {
+                      if (userCoins < totalCost) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Yetersiz Puan!')));
+                        return;
+                      }
+                      onDeductCoins(-totalCost);
+                      onAddCampaign({
+                        'title': 'Yeni YouTube Kampanyası',
+                        'type': type,
+                        'current': 0,
+                        'target': viewCount,
+                        'thumbnail': 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kampanya başarıyla oluşturuldu!')));
+                    },
+                    child: const Text('Oluştur', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('İptal', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () {
-                if (urlController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen geçerli bir URL girin.')));
-                  return;
-                }
-                if (userCoins < 100) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Yetersiz bakiye! En az 100 coin gerekiyor.')));
-                  return;
-                }
-                onDeductCoins(-100);
-                onAddCampaign('YouTube $selectedType Kampanyası', selectedType, targetCount);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kampanya başarıyla başlatıldı!')));
-              },
-              child: const Text('Başlat (100 Coin)', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -395,10 +544,10 @@ class CampaignsView extends StatelessWidget {
             children: [
               const Text('Kampanyalarım', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Oluştur'),
-                onPressed: () => _showCreateDialog(context),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text('Oluştur', style: TextStyle(color: Colors.white)),
+                onPressed: () => _openCreateDialog(context),
               ),
             ],
           ),
@@ -408,40 +557,35 @@ class CampaignsView extends StatelessWidget {
               itemCount: campaigns.length,
               itemBuilder: (context, index) {
                 final camp = campaigns[index];
-                double progress = camp.target > 0 ? camp.current / camp.target : 0.0;
-
+                double progress = camp['target'] > 0 ? camp['current'] / camp['target'] : 0.0;
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF333333)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Row(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(camp.thumbnail, width: 80, height: 50, fit: BoxFit.cover),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(camp['thumbnail'], width: 80, height: 50, fit: BoxFit.cover),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${camp.title} (${camp.type})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            const SizedBox(height: 8),
-                            LinearProgressIndicator(
-                              value: progress,
-                              color: Colors.red,
-                              backgroundColor: Colors.grey.shade800,
-                            ),
+                            Text('${camp['title']} (${camp['type']})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const SizedBox(height: 6),
+                            LinearProgressIndicator(value: progress, color: Colors.red, backgroundColor: Colors.grey.shade200),
                             const SizedBox(height: 6),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('İlerleme: ${camp.current} / ${camp.target}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                                const Text('Aktif', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11)),
+                                Text('İlerleme: ${camp['current']} / ${camp['target']}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                                const Text('Aktif', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 11)),
                               ],
                             ),
                           ],
