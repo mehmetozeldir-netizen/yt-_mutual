@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'campaign_sheet.dart';
-import 'shake_to_win_screen.dart';
 
 void main() {
   runApp(const YtMutualApp());
@@ -37,7 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onItemTapped(int index) {
     if (index == 0) {
-      // Kampanya sekmesine tıklandığında alt menüyü aç
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -119,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          const SizedBox(), // Index 0: Modal Sheet Açılır
+          const SizedBox(), // Index 0: Modal Açılır
           _buildWatchTab(), // Index 1: İzle Sekmesi
           _buildSubscribeTab(), // Index 2: Abone Ol Sekmesi
           _buildLikeTab(), // Index 3: Beğen Sekmesi
@@ -141,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 1. İZLE SEKMESİ (Görseldeki Birebir Tasarım)
+  // 1. İZLE SEKMESİ
   Widget _buildWatchTab() {
     return SingleChildScrollView(
       child: Padding(
@@ -292,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 2. ABONE OL SEKMESİ (Görseldeki Birebir Tasarım)
+  // 2. ABONE OL SEKMESİ
   Widget _buildSubscribeTab() {
     return SingleChildScrollView(
       child: Padding(
@@ -448,8 +445,265 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // 3. BEĞEN SEKMESİ
   Widget _buildLikeTab() {
-    return const Center(
-      child: Text("Beğen Ekranı Yakında Eklenecek", style: TextStyle(fontSize: 16, color: Colors.grey)),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.black12),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Text("Otomatik", style: TextStyle(color: Colors.grey, fontSize: 14)),
+                          const SizedBox(width: 8),
+                          Switch(
+                            value: isAutomatic,
+                            activeColor: Colors.red,
+                            onChanged: (val) {
+                              setState(() {
+                                isAutomatic = val;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.error_outline, color: Colors.black54),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: const [
+                        Icon(Icons.thumb_up_alt_rounded, color: Colors.red, size: 54),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Harika Bir YouTube Videosu",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: const Icon(Icons.favorite, color: Colors.black87, size: 28),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text("150", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          const Text("Puan", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: const Icon(Icons.timer_outlined, color: Colors.black87, size: 28),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text("45", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          const Text("Saniye", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF4B4B),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          ),
+                          onPressed: () {},
+                          child: const Text("Beğen", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          ),
+                          onPressed: () {},
+                          child: const Text("Değiştir", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.black54, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Kullandığınız hesap, YT hesabınızla aynı olmalıdır.",
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 60,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                border: Border.all(color: Colors.grey.shade400),
+              ),
+              child: const Center(
+                child: Text("Unity Ads Reklam Alanı", style: TextStyle(color: Colors.grey)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// KAMPANYA MÖDÜLÜ (BOTTOM SHEET)
+// -----------------------------------------------------------------------------
+class CampaignBottomSheet extends StatelessWidget {
+  const CampaignBottomSheet({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: 20,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Kampanya Oluştur",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            decoration: InputDecoration(
+              hintText: "YouTube Video / Kanal Bağlantısını Yapıştırın",
+              prefixIcon: const Icon(Icons.link),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Kampanya Ekle", style: TextStyle(color: Colors.white, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SALLA KAZAN EKRANI
+// -----------------------------------------------------------------------------
+class ShakeToWinScreen extends StatelessWidget {
+  const ShakeToWinScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Salla Kazan"),
+        backgroundColor: Colors.redAccent,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.vibration, size: 100, color: Colors.redAccent),
+            const SizedBox(height: 24),
+            const Text(
+              "Hediyeni Almak İçin Telefonu Salla!",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Tebrikler! 50 Puan Kazandınız.")),
+                );
+              },
+              child: const Text("Salla & Puan Kazan", style: TextStyle(color: Colors.white)),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
