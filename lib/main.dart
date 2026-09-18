@@ -31,7 +31,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int userPoints = 1450; 
+  int userPoints = 1450;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.vibration, color: Colors.blue),
               title: const Text("Salla Kazan"),
               onTap: () {
-                Navigator.pop(context); // Menüyü kapat
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ShakeToWinScreen()),
