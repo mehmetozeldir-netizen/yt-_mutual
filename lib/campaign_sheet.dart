@@ -65,7 +65,11 @@ class _CampaignBottomSheetState extends State<CampaignBottomSheet> {
                           width: 32,
                           height: 32,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.play_arrow, size: 32, color: Colors.red),
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.play_circle_fill,
+                            size: 32,
+                            color: Colors.red,
+                          ),
                         );
                       },
                     ),
